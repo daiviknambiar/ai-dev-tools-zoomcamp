@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multiplayer Snake Game</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Authentication Section -->
+    <div id="auth-container" class="container">
+        <div class="auth-box">
+            <h1>🐍 Multiplayer Snake Game</h1>
+
+            <div id="login-form" class="auth-form">
+                <h2>Login</h2>
+                <input type="text" id="login-username" placeholder="Username" required>
+                <input type="password" id="login-password" placeholder="Password" required>
+                <button id="login-btn">Login</button>
+                <p>Don't have an account? <a href="#" id="show-signup">Sign up</a></p>
+            </div>
+
+            <div id="signup-form" class="auth-form hidden">
+                <h2>Sign Up</h2>
+                <input type="text" id="signup-username" placeholder="Username" required>
+                <input type="email" id="signup-email" placeholder="Email" required>
+                <input type="password" id="signup-password" placeholder="Password" required>
+                <button id="signup-btn">Sign Up</button>
+                <p>Already have an account? <a href="#" id="show-login">Login</a></p>
+            </div>
+
+            <div id="auth-error" class="error-message hidden"></div>
+        </div>
+    </div>
+
+    <!-- Main Game Container -->
+    <div id="game-container" class="container hidden">
+        <!-- Header with User Info -->
+        <header class="game-header">
+            <div class="user-info">
+                <span>Welcome, <strong id="username-display"></strong>!</span>
+                <button id="logout-btn" class="btn-secondary">Logout</button>
+            </div>
+            <nav class="main-nav">
+                <button id="nav-play" class="nav-btn active">Play</button>
+                <button id="nav-leaderboard" class="nav-btn">Leaderboard</button>
+                <button id="nav-watch" class="nav-btn">Watch Players</button>
+            </nav>
+        </header>
+
+        <!-- Play Section -->
+        <div id="play-section" class="section">
+            <div class="game-controls">
+                <h2>Snake Game</h2>
+                <div class="mode-selector">
+                    <label>
+                        <input type="radio" name="game-mode" value="pass-through" checked>
+                        Pass-Through Mode (Snake goes through walls)
+                    </label>
+                    <label>
+                        <input type="radio" name="game-mode" value="walls">
+                        Walls Mode (Game over on wall hit)
+                    </label>
+                </div>
+                <div class="game-stats">
+                    <span>Score: <strong id="score">0</strong></span>
+                    <span>High Score: <strong id="high-score">0</strong></span>
+                    <span>Mode: <strong id="current-mode">Pass-Through</strong></span>
+                </div>
+                <button id="start-btn" class="btn-primary">Start Game</button>
+                <button id="pause-btn" class="btn-secondary hidden">Pause</button>
+            </div>
+            <div class="game-board-container">
+                <canvas id="game-canvas" width="600" height="600"></canvas>
+                <div id="game-over" class="game-overlay hidden">
+                    <h2>Game Over!</h2>
+                    <p>Score: <span id="final-score">0</span></p>
+                    <button id="restart-btn" class="btn-primary">Play Again</button>
+                </div>
+            </div>
+            <div class="game-instructions">
+                <h3>Controls</h3>
+                <p>Use Arrow Keys or WASD to control the snake</p>
+                <p>🟢 = Food | 🟦 = Snake | ⬛ = Empty</p>
+            </div>
+        </div>
+
+        <!-- Leaderboard Section -->
+        <div id="leaderboard-section" class="section hidden">
+            <h2>🏆 Leaderboard</h2>
+            <div class="leaderboard-filters">
+                <button class="filter-btn active" data-mode="all">All Modes</button>
+                <button class="filter-btn" data-mode="pass-through">Pass-Through</button>
+                <button class="filter-btn" data-mode="walls">Walls</button>
+            </div>
+            <table id="leaderboard-table">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Player</th>
+                        <th>Score</th>
+                        <th>Mode</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboard-body">
+                    <!-- Populated by JS -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Watch Players Section -->
+        <div id="watch-section" class="section hidden">
+            <h2>👀 Watch Live Games</h2>
+            <div class="active-players-list">
+                <h3>Active Players</h3>
+                <div id="players-list">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+            <div class="watch-game-container">
+                <div id="watch-info" class="watch-info">
+                    <p>Select a player to watch their game</p>
+                </div>
+                <canvas id="watch-canvas" width="600" height="600"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>
