@@ -6,6 +6,7 @@
 import { AuthController } from './auth.js';
 import { LeaderboardController } from './leaderboard.js';
 import { WatchController } from './watch.js';
+import { CodeEditorController } from './editor.js';
 import { SnakeGame, GameRenderer, DIRECTIONS, GAME_MODES } from './game.js';
 import { api } from './api.js';
 
@@ -14,6 +15,7 @@ class App {
         this.authController = new AuthController();
         this.leaderboardController = new LeaderboardController();
         this.watchController = new WatchController();
+        this.codeEditorController = new CodeEditorController();
 
         this.game = null;
         this.renderer = null;
@@ -24,6 +26,7 @@ class App {
         this.setupGame();
         this.setupNavigation();
         this.setupGameControls();
+        this.setupCodeEditor();
         this.loadHighScore();
     }
 
@@ -37,13 +40,32 @@ class App {
         const sections = {
             'nav-play': 'play-section',
             'nav-leaderboard': 'leaderboard-section',
-            'nav-watch': 'watch-section'
+            'nav-watch': 'watch-section',
+            'nav-code': 'code-section'
         };
 
         Object.keys(sections).forEach(navId => {
             const btn = document.getElementById(navId);
             btn.addEventListener('click', () => {
                 this.navigateTo(navId, sections[navId]);
+            });
+        });
+    }
+
+    setupCodeEditor() {
+        // Setup example buttons
+        const exampleBtns = document.querySelectorAll('.example-btn');
+        exampleBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const code = btn.dataset.code;
+                const lang = btn.dataset.lang;
+                const codeInput = document.getElementById('code-input');
+                const langSelect = document.getElementById('code-language');
+
+                codeInput.value = code;
+                langSelect.value = lang;
+                this.codeEditorController.currentCode = code;
+                this.codeEditorController.currentLanguage = lang;
             });
         });
     }
@@ -68,6 +90,8 @@ class App {
             this.watchController.show();
         } else if (sectionId === 'play-section') {
             this.watchController.hide();
+        } else if (sectionId === 'code-section') {
+            this.codeEditorController.show();
         }
     }
 

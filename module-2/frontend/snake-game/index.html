@@ -45,6 +45,7 @@
                 <button id="nav-play" class="nav-btn active">Play</button>
                 <button id="nav-leaderboard" class="nav-btn">Leaderboard</button>
                 <button id="nav-watch" class="nav-btn">Watch Players</button>
+                <button id="nav-code" class="nav-btn">Code</button>
             </nav>
         </header>
 
@@ -123,6 +124,86 @@
                     <p>Select a player to watch their game</p>
                 </div>
                 <canvas id="watch-canvas" width="600" height="600"></canvas>
+            </div>
+        </div>
+
+        <!-- Code Editor Section -->
+        <div id="code-section" class="section hidden">
+            <h2>💻 Code Executor</h2>
+            <p>Execute JavaScript and Python code in your browser using WASM (Web Assembly). Code runs locally - no server execution!</p>
+            
+            <div class="code-editor-container">
+                <div class="code-editor-controls">
+                    <div class="control-group">
+                        <label for="code-language">Language:</label>
+                        <select id="code-language">
+                            <option value="javascript">JavaScript</option>
+                            <option value="python">Python</option>
+                        </select>
+                        <span id="python-status" style="margin-left: 15px; font-size: 14px;">● Checking...</span>
+                    </div>
+                    <div class="control-group">
+                        <button id="execute-code-btn" class="btn-primary">▶ Execute</button>
+                        <button id="clear-code-btn" class="btn-secondary">Clear</button>
+                    </div>
+                </div>
+
+                <div class="code-editor-area">
+                    <textarea 
+                        id="code-input" 
+                        class="code-input"
+                        placeholder="Enter your code here..."
+                        spellcheck="false"
+                    ></textarea>
+                </div>
+
+                <div class="code-output-section">
+                    <h3>Output</h3>
+                    <div id="code-output" class="code-output">
+                        <p style="color: #999;">Output will appear here...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="code-examples">
+                <h3>Examples</h3>
+                <div class="example-buttons">
+                    <button class="example-btn" data-lang="javascript" data-code="// Calculate factorial
+function factorial(n) {
+    return n <= 1 ? 1 : n * factorial(n - 1);
+}
+
+console.log('5! =', factorial(5));
+console.log('10! =', factorial(10));
+">JavaScript: Factorial</button>
+                    <button class="example-btn" data-lang="python" data-code="# Calculate Fibonacci
+def fibonacci(n):
+    if n <= 1:
+        return n
+    return fibonacci(n-1) + fibonacci(n-2)
+
+for i in range(10):
+    print(f'fib({i}) = {fibonacci(i)}')
+">Python: Fibonacci</button>
+                    <button class="example-btn" data-lang="javascript" data-code="// Array operations
+const numbers = [1, 2, 3, 4, 5];
+const doubled = numbers.map(n => n * 2);
+const evens = doubled.filter(n => n % 2 === 0);
+
+console.log('Original:', numbers);
+console.log('Doubled:', doubled);
+console.log('Evens:', evens);
+">JavaScript: Array Ops</button>
+                    <button class="example-btn" data-lang="python" data-code="# List comprehension
+numbers = [1, 2, 3, 4, 5]
+squares = [n**2 for n in numbers]
+evens = [n for n in numbers if n % 2 == 0]
+
+print('Original:', numbers)
+print('Squares:', squares)
+print('Evens:', evens)
+">Python: List Ops</button>
+                </div>
             </div>
         </div>
     </div>

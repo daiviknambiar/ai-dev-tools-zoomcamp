@@ -12,13 +12,20 @@
     "start:frontend": "npm run serve",
     "dev": "concurrently -k -n backend,frontend \"npm: start:backend\" \"npm: start:frontend\""
   },
-  "keywords": ["snake", "game", "multiplayer"],
+  "keywords": [
+    "snake",
+    "game",
+    "multiplayer"
+  ],
   "author": "",
   "license": "MIT",
   "devDependencies": {
     "@jest/globals": "^29.7.0",
+    "concurrently": "^7.6.0",
     "jest": "^29.7.0",
-    "jest-environment-jsdom": "^29.7.0",
-    "concurrently": "^7.6.0"
+    "jest-environment-jsdom": "^29.7.0"
+  },
+  "dependencies": {
+    "pyodide": "^0.29.0"
   }
 }
