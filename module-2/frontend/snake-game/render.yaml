@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: snake-game
+    runtime: docker
+    region: oregon
+    plan: free
+    dockerfilePath: module-2/frontend/snake-game/Dockerfile
+    dockerContext: module-2/frontend/snake-game
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: snake-game-db
+          property: connectionString
+      - key: DEBUG
+        value: "false"
+    healthCheckPath: /health
+    autoDeploy: true
+
+databases:
+  - name: snake-game-db
+    databaseName: snakedb
+    user: snakeuser
+    region: oregon
+    plan: free
+

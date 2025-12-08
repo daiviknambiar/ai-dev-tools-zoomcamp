@@ -3,13 +3,16 @@ FastAPI backend for Snake Game with SQLAlchemy ORM database support.
 Supports PostgreSQL and SQLite.
 """
 
+import os
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
 from sqlalchemy.orm import Session
+from pathlib import Path
 
 from database import SessionLocal, init_db
 from models import User, LeaderboardEntry, Game
@@ -38,6 +41,15 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Mount frontend static files
+frontend_dir = Path(__file__).parent.parent
+if (frontend_dir / "index.html").exists():
+    # Frontend files are in the parent directory (when deployed in container)
+    app.mount("/", StaticFiles(directory=frontend_dir, html=True), name="frontend")
+elif (frontend_dir / "css").exists():
+    # Alternative: frontend files are directly accessible
+    app.mount("/", StaticFiles(directory=frontend_dir, html=True), name="frontend")
 
 
 # Pydantic request models
