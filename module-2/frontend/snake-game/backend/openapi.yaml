@@ -1,0 +1,378 @@
+openapi: 3.0.3
+info:
+  title: Snake Game API
+  version: 1.0.0
+  description: >-
+    API for authentication, leaderboard, game sessions and live-watch features
+    powering the Snake Game frontend. This spec is derived from the frontend's
+    `MockAPI` client and mirrors the methods the client expects.
+servers:
+  - url: http://localhost:8000
+paths:
+  /auth/login:
+    post:
+      summary: Login user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Successful login
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /auth/signup:
+    post:
+      summary: Create a new user and sign in
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignupRequest'
+      responses:
+        '201':
+          description: User created and signed in
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          description: Validation error or duplicate user/email
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /auth/logout:
+    post:
+      summary: Logout current user
+      responses:
+        '200':
+          description: Logged out
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+  /auth/me:
+    get:
+      summary: Get current authenticated user
+      responses:
+        '200':
+          description: Current user session
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserSession'
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /leaderboard:
+    get:
+      summary: Retrieve leaderboard entries
+      parameters:
+        - in: query
+          name: mode
+          schema:
+            type: string
+            enum: [all, walls, pass-through]
+          description: Filter by game mode
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 50
+          description: Maximum number of entries to return
+      responses:
+        '200':
+          description: Leaderboard list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  leaderboard:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/LeaderboardEntry'
+    post:
+      summary: Submit a new score entry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                score:
+                  type: integer
+                mode:
+                  type: string
+                  enum: [walls, pass-through]
+              required: [score, mode]
+      responses:
+        '201':
+          description: Score submitted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  entry:
+                    $ref: '#/components/schemas/LeaderboardEntry'
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /users/me/highscore:
+    get:
+      summary: Get current user's high score (optionally filtered by mode)
+      parameters:
+        - in: query
+          name: mode
+          schema:
+            type: string
+            enum: [all, walls, pass-through]
+            default: all
+      responses:
+        '200':
+          description: High score for current user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  highScore:
+                    type: integer
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /active-games:
+    get:
+      summary: List mock active games / players to watch
+      responses:
+        '200':
+          description: Active games list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  games:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ActiveGame'
+  /games:
+    post:
+      summary: Start a new game session for the authenticated user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                mode:
+                  type: string
+                  enum: [walls, pass-through]
+              required: [mode]
+      responses:
+        '201':
+          description: Game started
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  gameSession:
+                    $ref: '#/components/schemas/GameSession'
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /games/{gameId}:
+    get:
+      summary: Get a game's state snapshot
+      parameters:
+        - in: path
+          name: gameId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Game state snapshot
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  gameId:
+                    type: integer
+                  timestamp:
+                    type: string
+        '404':
+          description: Game not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /games/{gameId}/end:
+    post:
+      summary: End a game and (optionally) submit final score
+      parameters:
+        - in: path
+          name: gameId
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                score:
+                  type: integer
+      responses:
+        '200':
+          description: Game ended
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  gameId:
+                    type: integer
+                  score:
+                    type: integer
+                  endTime:
+                    type: string
+components:
+  schemas:
+    LoginRequest:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+      required: [username, password]
+    SignupRequest:
+      type: object
+      properties:
+        username:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+      required: [username, email, password]
+    UserSession:
+      type: object
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        email:
+          type: string
+        loginTime:
+          type: string
+    AuthResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        user:
+          $ref: '#/components/schemas/UserSession'
+    LeaderboardEntry:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        username:
+          type: string
+        score:
+          type: integer
+        mode:
+          type: string
+        date:
+          type: string
+    ActiveGame:
+      type: object
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        mode:
+          type: string
+        currentScore:
+          type: integer
+        gameStartTime:
+          type: string
+        isPlaying:
+          type: boolean
+    GameSession:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        username:
+          type: string
+        mode:
+          type: string
+        startTime:
+          type: string
+        isActive:
+          type: boolean
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        error:
+          type: string
