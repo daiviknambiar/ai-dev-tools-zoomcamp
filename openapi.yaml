@@ -1,0 +1,610 @@
+openapi: 3.0.3
+info:
+  title: NBA Stats & Betting Odds API
+  description: |
+    API for accessing NBA player statistics combined with live betting odds.
+    This API serves as a unified interface for sports bettors to make data-driven decisions
+    by providing real-time player stats alongside current betting lines.
+  version: 1.0.0
+  contact:
+    name: NBA Stats App
+    
+servers:
+  - url: http://localhost:8000
+    description: Local development server
+  - url: https://nba-stats-api.streamlit.app
+    description: Production server
+
+tags:
+  - name: players
+    description: NBA player statistics and information
+  - name: games
+    description: NBA games, scores, and betting odds
+  - name: health
+    description: API health check
+
+paths:
+  /api/v1/health:
+    get:
+      tags:
+        - health
+      summary: Health check
+      description: Returns the health status of the API
+      operationId: healthCheck
+      responses:
+        '200':
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /api/v1/players:
+    get:
+      tags:
+        - players
+      summary: List NBA players
+      description: Get a list of NBA players with optional filtering
+      operationId: listPlayers
+      parameters:
+        - name: search
+          in: query
+          description: Search players by name
+          required: false
+          schema:
+            type: string
+            example: LeBron
+        - name: team_id
+          in: query
+          description: Filter players by team ID
+          required: false
+          schema:
+            type: integer
+            example: 14
+        - name: page
+          in: query
+          description: Page number for pagination
+          required: false
+          schema:
+            type: integer
+            default: 1
+            minimum: 1
+        - name: per_page
+          in: query
+          description: Number of results per page
+          required: false
+          schema:
+            type: integer
+            default: 25
+            minimum: 1
+            maximum: 100
+      responses:
+        '200':
+          description: List of players retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlayersListResponse'
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/players/{id}:
+    get:
+      tags:
+        - players
+      summary: Get player details
+      description: Get detailed information and statistics for a specific player
+      operationId: getPlayer
+      parameters:
+        - name: id
+          in: path
+          description: Player ID
+          required: true
+          schema:
+            type: integer
+            example: 237
+      responses:
+        '200':
+          description: Player details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlayerDetailResponse'
+        '404':
+          description: Player not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/players/{id}/stats:
+    get:
+      tags:
+        - players
+      summary: Get player statistics
+      description: Get season and career statistics for a specific player
+      operationId: getPlayerStats
+      parameters:
+        - name: id
+          in: path
+          description: Player ID
+          required: true
+          schema:
+            type: integer
+            example: 237
+        - name: season
+          in: query
+          description: Season year (e.g., 2024 for 2024-25 season)
+          required: false
+          schema:
+            type: integer
+            example: 2024
+      responses:
+        '200':
+          description: Player statistics retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlayerStatsResponse'
+        '404':
+          description: Player not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/games/live:
+    get:
+      tags:
+        - games
+      summary: Get live games
+      description: Get currently live or upcoming NBA games with betting odds
+      operationId: getLiveGames
+      responses:
+        '200':
+          description: Live games retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LiveGamesResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/games/{id}:
+    get:
+      tags:
+        - games
+      summary: Get game details
+      description: Get detailed information about a specific game including player stats and odds
+      operationId: getGame
+      parameters:
+        - name: id
+          in: path
+          description: Game ID
+          required: true
+          schema:
+            type: integer
+            example: 12345
+      responses:
+        '200':
+          description: Game details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GameDetailResponse'
+        '404':
+          description: Game not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/games:
+    get:
+      tags:
+        - games
+      summary: Get games by date
+      description: Get NBA games for a specific date range
+      operationId: getGames
+      parameters:
+        - name: start_date
+          in: query
+          description: Start date (YYYY-MM-DD)
+          required: false
+          schema:
+            type: string
+            format: date
+            example: "2024-01-01"
+        - name: end_date
+          in: query
+          description: End date (YYYY-MM-DD)
+          required: false
+          schema:
+            type: string
+            format: date
+            example: "2024-01-07"
+        - name: team_id
+          in: query
+          description: Filter by team ID
+          required: false
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Games retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamesListResponse'
+
+components:
+  schemas:
+    HealthResponse:
+      type: object
+      required:
+        - status
+        - timestamp
+      properties:
+        status:
+          type: string
+          example: healthy
+        timestamp:
+          type: string
+          format: date-time
+          example: "2024-01-25T10:30:00Z"
+        version:
+          type: string
+          example: "1.0.0"
+
+    Player:
+      type: object
+      required:
+        - id
+        - first_name
+        - last_name
+      properties:
+        id:
+          type: integer
+          example: 237
+        first_name:
+          type: string
+          example: LeBron
+        last_name:
+          type: string
+          example: James
+        position:
+          type: string
+          example: F
+        height:
+          type: string
+          nullable: true
+          example: "6-9"
+        weight:
+          type: string
+          nullable: true
+          example: "250"
+        jersey_number:
+          type: string
+          nullable: true
+          example: "23"
+        college:
+          type: string
+          nullable: true
+          example: "St. Vincent-St. Mary HS (OH)"
+        country:
+          type: string
+          nullable: true
+          example: "USA"
+        draft_year:
+          type: integer
+          nullable: true
+          example: 2003
+        draft_round:
+          type: integer
+          nullable: true
+          example: 1
+        draft_number:
+          type: integer
+          nullable: true
+          example: 1
+        team:
+          $ref: '#/components/schemas/Team'
+
+    Team:
+      type: object
+      required:
+        - id
+        - name
+        - abbreviation
+      properties:
+        id:
+          type: integer
+          example: 14
+        name:
+          type: string
+          example: LA Lakers
+        full_name:
+          type: string
+          example: Los Angeles Lakers
+        abbreviation:
+          type: string
+          example: LAL
+        city:
+          type: string
+          example: Los Angeles
+        conference:
+          type: string
+          example: West
+        division:
+          type: string
+          example: Pacific
+
+    PlayerStats:
+      type: object
+      properties:
+        games_played:
+          type: integer
+          example: 45
+        minutes:
+          type: string
+          example: "35.2"
+        points:
+          type: number
+          format: float
+          example: 25.3
+        rebounds:
+          type: number
+          format: float
+          example: 7.5
+        assists:
+          type: number
+          format: float
+          example: 8.1
+        steals:
+          type: number
+          format: float
+          example: 1.3
+        blocks:
+          type: number
+          format: float
+          example: 0.6
+        turnovers:
+          type: number
+          format: float
+          example: 3.5
+        field_goal_pct:
+          type: number
+          format: float
+          example: 0.523
+        three_point_pct:
+          type: number
+          format: float
+          example: 0.412
+        free_throw_pct:
+          type: number
+          format: float
+          example: 0.750
+        season:
+          type: integer
+          example: 2024
+
+    BettingOdds:
+      type: object
+      properties:
+        bookmaker:
+          type: string
+          example: DraftKings
+        market_type:
+          type: string
+          example: h2h
+          enum: [h2h, spreads, totals, player_props]
+        outcomes:
+          type: array
+          items:
+            $ref: '#/components/schemas/BettingOutcome'
+        last_update:
+          type: string
+          format: date-time
+          example: "2024-01-25T10:30:00Z"
+
+    BettingOutcome:
+      type: object
+      properties:
+        name:
+          type: string
+          example: LA Lakers
+        price:
+          type: number
+          format: float
+          example: -150
+        point:
+          type: number
+          format: float
+          nullable: true
+          example: -5.5
+
+    Game:
+      type: object
+      required:
+        - id
+        - date
+        - home_team
+        - visitor_team
+        - status
+      properties:
+        id:
+          type: integer
+          example: 12345
+        date:
+          type: string
+          format: date-time
+          example: "2024-01-25T19:30:00Z"
+        season:
+          type: integer
+          example: 2024
+        status:
+          type: string
+          example: Final
+          enum: [Scheduled, InProgress, Final, Postponed]
+        period:
+          type: integer
+          example: 4
+        time:
+          type: string
+          nullable: true
+          example: "Final"
+        home_team:
+          $ref: '#/components/schemas/Team'
+        visitor_team:
+          $ref: '#/components/schemas/Team'
+        home_team_score:
+          type: integer
+          example: 108
+        visitor_team_score:
+          type: integer
+          example: 105
+
+    PlayersListResponse:
+      type: object
+      required:
+        - data
+        - meta
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Player'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    PlayerDetailResponse:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          allOf:
+            - $ref: '#/components/schemas/Player'
+            - type: object
+              properties:
+                current_season_stats:
+                  $ref: '#/components/schemas/PlayerStats'
+
+    PlayerStatsResponse:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlayerStats'
+
+    LiveGamesResponse:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: array
+          items:
+            allOf:
+              - $ref: '#/components/schemas/Game'
+              - type: object
+                properties:
+                  betting_odds:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/BettingOdds'
+
+    GameDetailResponse:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          allOf:
+            - $ref: '#/components/schemas/Game'
+            - type: object
+              properties:
+                betting_odds:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/BettingOdds'
+                box_score:
+                  type: object
+                  description: Player statistics from the game
+
+    GamesListResponse:
+      type: object
+      required:
+        - data
+        - meta
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Game'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    PaginationMeta:
+      type: object
+      required:
+        - current_page
+        - per_page
+      properties:
+        current_page:
+          type: integer
+          example: 1
+        next_page:
+          type: integer
+          nullable: true
+          example: 2
+        per_page:
+          type: integer
+          example: 25
+        total_pages:
+          type: integer
+          nullable: true
+          example: 10
+        total_count:
+          type: integer
+          nullable: true
+          example: 250
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          example: "Resource not found"
+        detail:
+          type: string
+          example: "Player with ID 999999 does not exist"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2024-01-25T10:30:00Z"
